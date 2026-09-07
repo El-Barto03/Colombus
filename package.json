@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@eslint/js": "9.39.4",
+    "@netlify/plugin-nextjs": "5.15.13",
     "@next/eslint-plugin-next": "16.3.4",
     "@tailwindcss/postcss": "4.2.1",
     "@types/leaflet": "1.9.20",
