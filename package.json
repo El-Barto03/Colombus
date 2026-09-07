@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "test": "pnpm build && node --test tests/shop-map.test.mjs",
     "lint": "eslint . --ignore-pattern .next"
