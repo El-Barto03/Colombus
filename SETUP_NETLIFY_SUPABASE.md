@@ -34,7 +34,7 @@ If the project only offers the older `service_role` key, save it as `SUPABASE_SE
 
 - Build command: `pnpm build`
 - Publish directory: `.next`
-- Node.js: `22.13.0`
+- Node.js: `22.22.1`
 - Base directory: blank when `package.json` is at the repository root
 
 ## 5. Deploy and test
