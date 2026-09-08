@@ -17,7 +17,8 @@ import { fitAllShops } from "../lib/map-view.ts";
 const root = new URL("../", import.meta.url);
 
 test("includes public add, duplicate, edit, and confirmed delete workflows", async () => {
-  const [page, styles] = await Promise.all([
+  const [page, pageShell, styles] = await Promise.all([
+    readFile(new URL("app/shop-map-client.tsx", root), "utf8"),
     readFile(new URL("app/page.tsx", root), "utf8"),
     readFile(new URL("app/globals.css", root), "utf8"),
   ]);
@@ -38,11 +39,13 @@ test("includes public add, duplicate, edit, and confirmed delete workflows", asy
   assert.match(page, /function PriceRangeDisplay/);
   assert.match(page, /method: mode === "edit" \? "PUT" : "POST"/);
   assert.match(page, /sortShops\(result\.shops\)/);
-  assert.match(page, /const \[shops, setShops\] = useState<Shop\[\]>\(\[\]\)/);
-  assert.match(page, /useState<ShopSyncState>\("loading"\)/);
-  assert.match(page, /setShops\(sortShops\(initialShops\)\)/);
-  assert.match(page, /shopSyncState === "loading" \? \(/);
-  assert.doesNotMatch(page, /useState<Shop\[\]>\(\(\) => sortShops\(initialShops\)\)/);
+  assert.match(page, /initialShopData:\s*Shop\[\]/);
+  assert.match(page, /useState<Shop\[\]>\(\(\) => sortShops\(initialShopData\)\)/);
+  assert.doesNotMatch(page, /ShopSyncState/);
+  assert.doesNotMatch(page, /Loading shops/);
+  assert.doesNotMatch(page, /setShops\(sortShops\(initialShops\)\)/);
+  assert.match(pageShell, /shops = sortShops\(await readShops\(\)\)/);
+  assert.match(pageShell, /initialShopData=\{shops\}/);
   assert.match(page, /normalize\("NFD"\)/);
   assert.match(page, /const openList = \(\) => \{[\s\S]*?map\.fitBounds\([\s\S]*?filteredShops\.map/);
   assert.match(page, /const worldBounds = L\.latLngBounds/);
@@ -110,7 +113,7 @@ test("includes public add, duplicate, edit, and confirmed delete workflows", asy
 
 test("duplicates chain details into a fresh location and supports airport and train filters", async () => {
   const [page, styles, shops, server, validation] = await Promise.all([
-    readFile(new URL("app/page.tsx", root), "utf8"),
+    readFile(new URL("app/shop-map-client.tsx", root), "utf8"),
     readFile(new URL("app/globals.css", root), "utf8"),
     readFile(new URL("lib/shops.ts", root), "utf8"),
     readFile(new URL("lib/shop-server.ts", root), "utf8"),
@@ -208,7 +211,7 @@ test("View all safely handles a single shop, no shops, and a map still loading",
 
 test("supports adaptive branding, direct logo uploads, and typed contacts", async () => {
   const [page, styles, shops, uploadRoute, logoRoute, logoStorage] = await Promise.all([
-    readFile(new URL("app/page.tsx", root), "utf8"),
+    readFile(new URL("app/shop-map-client.tsx", root), "utf8"),
     readFile(new URL("app/globals.css", root), "utf8"),
     readFile(new URL("lib/shops.ts", root), "utf8"),
     readFile(new URL("app/api/logos/route.ts", root), "utf8"),
@@ -257,7 +260,7 @@ test("supports adaptive branding, direct logo uploads, and typed contacts", asyn
 
 test("supports inline persistent prospect tracking without opening Edit", async () => {
   const [page, styles, itemRoute, schema, server, validation] = await Promise.all([
-    readFile(new URL("app/page.tsx", root), "utf8"),
+    readFile(new URL("app/shop-map-client.tsx", root), "utf8"),
     readFile(new URL("app/globals.css", root), "utf8"),
     readFile(new URL("app/api/shops/[id]/route.ts", root), "utf8"),
     readFile(new URL("supabase/schema.sql", root), "utf8"),
@@ -294,7 +297,7 @@ test("supports inline persistent prospect tracking without opening Edit", async 
 
 test("uses the revised title and streamlined location form", async () => {
   const [page, layout, location, collectionRoute, itemRoute] = await Promise.all([
-    readFile(new URL("app/page.tsx", root), "utf8"),
+    readFile(new URL("app/shop-map-client.tsx", root), "utf8"),
     readFile(new URL("app/layout.tsx", root), "utf8"),
     readFile(new URL("lib/shop-location.ts", root), "utf8"),
     readFile(new URL("app/api/shops/route.ts", root), "utf8"),
@@ -486,9 +489,10 @@ test("ships a locked-down Supabase schema and Netlify configuration", async () =
 });
 
 test("validates shared add, edit, tracking, and delete API routes", async () => {
-  const [collectionRoute, itemRoute] = await Promise.all([
+  const [collectionRoute, itemRoute, shopServer] = await Promise.all([
     readFile(new URL("app/api/shops/route.ts", root), "utf8"),
     readFile(new URL("app/api/shops/[id]/route.ts", root), "utf8"),
+    readFile(new URL("lib/shop-server.ts", root), "utf8"),
   ]);
 
   assert.match(collectionRoute, /export async function GET/);
@@ -497,5 +501,5 @@ test("validates shared add, edit, tracking, and delete API routes", async () => 
   assert.match(itemRoute, /export async function PATCH/);
   assert.match(itemRoute, /export async function DELETE/);
   assert.match(itemRoute, /\.from\("shops"\)[\s\S]*?\.delete\(\)/);
-  assert.match(collectionRoute, /\.upsert\(/);
+  assert.match(shopServer, /\.upsert\(/);
 });
