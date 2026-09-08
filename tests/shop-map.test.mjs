@@ -38,6 +38,11 @@ test("includes public add, duplicate, edit, and confirmed delete workflows", asy
   assert.match(page, /function PriceRangeDisplay/);
   assert.match(page, /method: mode === "edit" \? "PUT" : "POST"/);
   assert.match(page, /sortShops\(result\.shops\)/);
+  assert.match(page, /const \[shops, setShops\] = useState<Shop\[\]>\(\[\]\)/);
+  assert.match(page, /useState<ShopSyncState>\("loading"\)/);
+  assert.match(page, /setShops\(sortShops\(initialShops\)\)/);
+  assert.match(page, /shopSyncState === "loading" \? \(/);
+  assert.doesNotMatch(page, /useState<Shop\[\]>\(\(\) => sortShops\(initialShops\)\)/);
   assert.match(page, /normalize\("NFD"\)/);
   assert.match(page, /const openList = \(\) => \{[\s\S]*?map\.fitBounds\([\s\S]*?filteredShops\.map/);
   assert.match(page, /const worldBounds = L\.latLngBounds/);

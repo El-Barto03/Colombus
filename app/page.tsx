@@ -32,6 +32,7 @@ import { fitAllShops } from "@/lib/map-view";
 type FormMode = "add" | "edit" | "duplicate" | null;
 type CategoryFilter = "all" | ShopCategory;
 type MobileView = "list" | "map";
+type ShopSyncState = "loading" | "ready" | "fallback";
 type PriceRow = { product: string; minimum: string; maximum: string };
 type ContactKind = "email" | "phone" | "link";
 type ContactRow = { kind: ContactKind; value: string };
@@ -1688,7 +1689,8 @@ export default function Home() {
   const markersRef = useRef<Record<string, LeafletMarker>>({});
   const manualMarkerRef = useRef<LeafletMarker | null>(null);
   const hasFittedMapRef = useRef(false);
-  const [shops, setShops] = useState<Shop[]>(() => sortShops(initialShops));
+  const [shops, setShops] = useState<Shop[]>([]);
+  const [shopSyncState, setShopSyncState] = useState<ShopSyncState>("loading");
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -1739,10 +1741,13 @@ export default function Home() {
         const result = (await response.json()) as { shops?: Shop[]; error?: string };
         if (!response.ok || !result.shops) throw new Error(result.error || "Could not load shared updates.");
         setShops(sortShops(result.shops));
+        setShopSyncState("ready");
         setSyncError("");
       })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError") return;
+        setShops(sortShops(initialShops));
+        setShopSyncState("fallback");
         setSyncError(error instanceof Error ? error.message : "Could not load shared updates.");
       });
     return () => controller.abort();
@@ -2123,6 +2128,11 @@ export default function Home() {
             onDeleted={handleDeleted}
             onTracked={handleTracked}
           />
+        ) : shopSyncState === "loading" ? (
+          <div className="shop-data-loading" role="status" aria-live="polite">
+            <span className="loading-pin" aria-hidden="true" />
+            <p>Loading shops…</p>
+          </div>
         ) : (
           <section className="results" aria-label="Shop results">
             <div className="category-filters" aria-label="Filter map categories">
@@ -2225,9 +2235,9 @@ export default function Home() {
         >
           <span aria-hidden="true">←</span> Back to list
         </button>
-        <div className={`map-loading ${mapReady ? "is-hidden" : ""}`}>
+        <div className={`map-loading ${mapReady && shopSyncState !== "loading" ? "is-hidden" : ""}`}>
           <span className="loading-pin" aria-hidden="true" />
-          <p>Loading Madrid map…</p>
+          <p>{shopSyncState === "loading" ? "Loading shops…" : "Loading Madrid map…"}</p>
         </div>
         <div ref={mapNodeRef} id="shop-map" />
         {locationPicking ? (

@@ -195,6 +195,22 @@ a { -webkit-tap-highlight-color: transparent; }
 
 .shop-list { padding: 0 16px 20px; }
 
+.shop-data-loading {
+  display: grid;
+  min-height: 280px;
+  place-items: center;
+  align-content: center;
+  gap: 14px;
+  color: #8e8fa1;
+  text-align: center;
+}
+
+.shop-data-loading p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .shop-card {
   display: grid;
   width: 100%;
